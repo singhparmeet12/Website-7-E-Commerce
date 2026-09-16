@@ -1,0 +1,66 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  description String
+  colorTheme  String    // coral, yellow, lavender, mint
+  iconName    String
+  image       String
+  products    Product[]
+  createdAt   DateTime  @default(now())
+}
+
+model Product {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  name             String
+  tagline          String
+  description      String
+  price            Int      // Stored in cents, e.g. 3400 = $34.00
+  compareAtPrice   Int?     // Stored in cents, e.g. 4200 = $42.00
+  categorySlug     String
+  category         Category @relation(fields: [categorySlug], references: [slug])
+  inStock          Boolean  @default(true)
+  stockCount       Int      @default(15)
+  images           String   // JSON string array of image URLs [primary, secondary/lifestyle, ...]
+  colors           String   // JSON string array of { name: string, hex: string }
+  sizes            String   // JSON string array of string sizes e.g. ["Standard", "Large"]
+  tags             String   // JSON string array of tags e.g. ["bestseller", "eco-choice", "new"]
+  vibes            String   @default("[]") // JSON string array e.g. ["cybercore", "y2k"]
+  rarity           String   @default("COMMON") // COMMON, RARE, LIMITED, GRAIL
+  rating           Float    @default(4.9)
+  reviewsCount     Int      @default(28)
+  materials        String
+  dimensions       String
+  careInstructions String
+  featured         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  stripeSessionId String?  @unique
+  customerEmail   String
+  customerName    String?
+  totalAmount     Int      // in cents
+  status          String   @default("PENDING") // PENDING, PAID, CANCELLED
+  items           String   // JSON string of purchased items snapshot
+  shippingAddress String?  // JSON string
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
